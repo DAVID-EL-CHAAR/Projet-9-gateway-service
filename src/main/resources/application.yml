@@ -1,0 +1,44 @@
+server:
+  port: 8081  # Le port sur lequel le Gateway va écouter
+  
+  servlet:
+    session:
+      cookie:
+        name: JSESSIONID
+        path: /
+
+spring:
+  main:
+    web-application-type: reactive  # Spécifie que l'application utilise WebFlux (réactive)
+    
+  security:
+    user:
+      name: user
+      password: "{noop}password"
+    
+    
+
+  cloud:
+    gateway:
+      routes:
+        - id: patient-management-service
+          uri: http://localhost:8080  # URL du microservice backend (sur port 8080)
+          predicates:
+            - Path=/patients/**  # Toutes les requêtes sur /patients/** seront redirigées vers le backend
+
+        - id: note-service
+          uri: http://localhost:8083  # URL du microservice backend des notes 
+          predicates:
+            - Path=/notes/**  # Requêtes redirigées vers le backend notes
+
+        - id: diabetes-risk-service
+          uri: http://localhost:8084  # URL du microservice backend Diabetes Risk
+          predicates:
+            - Path=/diabetes-risk/**  # Toutes les requêtes sur /diabetes-risk/** seront redirigées vers le backend diabetes risk
+
+        - id: frontend-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/**
+          filters:
+            - RewritePath=/(?<segment>.*), /ui/${segment}
