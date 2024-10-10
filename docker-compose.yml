@@ -1,7 +1,36 @@
-version: "3.8"
-
-
 services:
+  # MySQL Database for Patient Service
+  mysql-db:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: patient
+    ports:
+      - "3307:3306"  # Utilisation du port 3307 sur l'hôte pour éviter les conflits avec un autre MySQL local
+    networks:
+      - microservices-network
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+
+  # MongoDB Database for Note Service (sans authentification)
+  mongodb:
+    image: mongo:4.4
+    ports:
+      - "27018:27017"
+    networks:
+      - microservices-network
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongo mongodb:27017/test --quiet
+      interval: 10s
+      retries: 5
+
+  # Gateway Service
   gateway-service:
     build:
       context: .
@@ -14,43 +43,77 @@ services:
       - patient-service
       - note-service
       - diabetes-risk-service
+      - mysql-db
+      - mongodb
 
+  # Patient Management Service
   patient-service:
     build:
-      context: ../patient-management-microservice  # Le chemin relatif vers le répertoire patient-service
+      context: ../patient-management-microservice
       dockerfile: Dockerfile
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/patient
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
     ports:
       - "8080:8080"
     networks:
       - microservices-network
+    depends_on:
+      - mysql-db
+    restart: on-failure  # Redémarrer en cas d'échec de démarrage
 
+  # Note Management Service
   note-service:
     build:
-      context: ../note-service  # Le chemin relatif vers le répertoire note-service
+      context: ../note-service
       dockerfile: Dockerfile
+    environment:
+      - SPRING_DATA_MONGODB_HOST=mongodb
+      - SPRING_DATA_MONGODB_PORT=27017
+      - SPRING_DATA_MONGODB_DATABASE=medical_notes_db
     ports:
       - "8083:8083"
     networks:
       - microservices-network
+    depends_on:
+      - mongodb
+    restart: on-failure  # Redémarrer en cas d'échec
 
+  # Diabetes Risk Service
   diabetes-risk-service:
     build:
-      context: ../diabetes-risk-microservice  # Le chemin relatif vers le répertoire diabetes-risk-service
+      context: ../diabetes-risk-microservice
       dockerfile: Dockerfile
     ports:
       - "8084:8084"
     networks:
       - microservices-network
+    depends_on:
+      - patient-service
+      - note-service
 
+  # Frontend Service
   frontend-service:
     build:
-      context: ../frontend-service  # Le chemin relatif vers le répertoire frontend-service
+      context: ../frontend-service
       dockerfile: Dockerfile
     ports:
       - "8082:8082"
     networks:
       - microservices-network
+    depends_on:
+      - gateway-service
+      - patient-service
+      - note-service
+      - diabetes-risk-service
 
+# Volumes to persist data
+volumes:
+  mysql-data:
+  mongo-data:
+
+# Network shared by all services
 networks:
   microservices-network:
     driver: bridge
