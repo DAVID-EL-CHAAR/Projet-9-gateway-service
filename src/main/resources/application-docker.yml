@@ -1,0 +1,37 @@
+server:
+  port: 8081  # Le port sur lequel le Gateway va écouter
+
+spring:
+  config:
+    activate:
+      on-profile: docker
+  main:
+    web-application-type: reactive  # Spécifie que l'application utilise WebFlux (réactive)
+    
+  security:
+    user:
+      name: user
+      password: "{noop}password"
+
+  cloud:
+    gateway:
+      routes:
+        - id: patient-management-service
+          uri: http://patient-service:8080  # URL du microservice patient-service dans Docker
+          predicates:
+            - Path=/patients/**
+
+        - id: note-service
+          uri: http://note-service:8083  # URL du microservice note-service dans Docker
+          predicates:
+            - Path=/notes/**
+
+        - id: diabetes-risk-service
+          uri: http://diabetes-risk-service:8084  # URL du microservice diabetes-risk-service dans Docker
+          predicates:
+            - Path=/diabetes-risk/**
+
+        - id: frontend-service
+          uri: http://frontend-service:8082  # URL du frontend dans Docker
+          predicates:
+            - Path=/**

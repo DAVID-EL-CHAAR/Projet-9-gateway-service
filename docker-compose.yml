@@ -45,6 +45,8 @@ services:
       - diabetes-risk-service
       - mysql-db
       - mongodb
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
 
   # Patient Management Service
   patient-service:
@@ -55,6 +57,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/patient
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root
+      - SPRING_PROFILES_ACTIVE=docker
     ports:
       - "8080:8080"
     networks:
@@ -72,6 +75,7 @@ services:
       - SPRING_DATA_MONGODB_HOST=mongodb
       - SPRING_DATA_MONGODB_PORT=27017
       - SPRING_DATA_MONGODB_DATABASE=medical_notes_db
+      - SPRING_PROFILES_ACTIVE=docker
     ports:
       - "8083:8083"
     networks:
@@ -92,6 +96,8 @@ services:
     depends_on:
       - patient-service
       - note-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
 
   # Frontend Service
   frontend-service:
@@ -107,6 +113,8 @@ services:
       - patient-service
       - note-service
       - diabetes-risk-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
 
 # Volumes to persist data
 volumes:

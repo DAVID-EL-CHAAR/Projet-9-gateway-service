@@ -23,4 +23,4 @@ COPY --from=build /app/target/gateway-service-0.0.1-SNAPSHOT.jar /app/gateway-se
 EXPOSE 8081
 
 # Lancer l'application
-ENTRYPOINT ["java", "-jar", "gateway-service.jar"]
+ENTRYPOINT ["java", "-jar", "gateway-service.jar","--spring.profiles.active=docker"]

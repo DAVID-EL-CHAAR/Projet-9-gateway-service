@@ -1,13 +1,10 @@
 server:
   port: 8081  # Le port sur lequel le Gateway va écouter
-  
-  servlet:
-    session:
-      cookie:
-        name: JSESSIONID
-        path: /
 
 spring:
+  config:
+    activate:
+      on-profile: local
   main:
     web-application-type: reactive  # Spécifie que l'application utilise WebFlux (réactive)
     
@@ -15,31 +12,29 @@ spring:
     user:
       name: user
       password: "{noop}password"
-    
+
   cloud:
     gateway:
       routes:
         - id: patient-management-service
-          uri: http://patient-service:8080  # URL du microservice backend patient-service
+          uri: http://localhost:8080  # URL du microservice backend patient-service en local
           predicates:
-            - Path=/patients/**  # Toutes les requêtes sur /patients/** seront redirigées vers le backend
+            - Path=/patients/**
 
         - id: note-service
-          uri: http://note-service:8083  # URL du microservice backend note-service
+          uri: http://localhost:8083  # URL du microservice backend note-service en local
           predicates:
-            - Path=/notes/**  # Requêtes redirigées vers le backend notes
+            - Path=/notes/**
 
         - id: diabetes-risk-service
-          uri: http://diabetes-risk-service:8084  # URL du microservice backend diabetes-risk-service
+          uri: http://localhost:8084  # URL du microservice backend diabetes-risk-service en local
           predicates:
-            - Path=/diabetes-risk/**  # Toutes les requêtes sur /diabetes-risk/** seront redirigées vers le backend diabetes risk
+            - Path=/diabetes-risk/**
 
         - id: frontend-service
-          uri: http://frontend-service:8082  # URL du frontend
+          uri: http://localhost:8082  # URL du frontend en local
           predicates:
             - Path=/**
-          #filters:
-            #- RewritePath=/(?<segment>.*), /ui/${segment}
 
 
 # cloud:
@@ -66,4 +61,3 @@ spring:
 #           - Path=/**
 #         filters:
 #           - RewritePath=/(?<segment>.*), /ui/${segment}
-
