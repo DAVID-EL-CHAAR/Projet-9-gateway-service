@@ -19,7 +19,7 @@ public class SecurityConfig {
 	@Bean
 	public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
 	    http
-	        .csrf(csrf -> csrf.disable())  // Désactiver CSRF si tu utilises une API stateless
+	        .csrf(csrf -> csrf.disable())  
 	        .authorizeExchange(exchanges -> exchanges
 	            .pathMatchers("/login", "/public/**","/patients/**","/notes/**","/diabetes-risk/**").permitAll()  // Permettre l'accès sans authentification uniquement à /login et /public/**
 	            //.pathMatchers("/patients/**", "/notes/**", "/diabetes-risk/**").authenticated()  // Ces routes nécessitent une authentification
